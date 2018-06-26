@@ -2,6 +2,7 @@
 'use strict';
 
 var Block = require("bs-platform/lib/js/block.js");
+var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
 var Api$PlantSaver = require("./Api.bs.js");
 
 var plant = /* record */[
@@ -12,21 +13,34 @@ var plant = /* record */[
   /* threshold : Celsius */Block.__(1, [15.0])
 ];
 
+function isSafe(plant, tomorrow) {
+  var match = plant[/* threshold */1];
+  if (match.tag) {
+    if (tomorrow[/* main */0][/* temp_min */2] - 272.15 < match[0]) {
+      return /* Some */["Hol sie rein es werden " + (tomorrow[/* main */0][/* temp_min */2] - 272.15).toString()];
+    } else {
+      return /* None */0;
+    }
+  } else if (tomorrow[/* main */0][/* temp_min */2] < match[0]) {
+    return /* Some */["Hol sie rein es werden " + tomorrow[/* main */0][/* temp_min */2].toString()];
+  } else {
+    return /* None */0;
+  }
+}
+
+function command(forecasts) {
+  return Belt_Option.getWithDefault(Belt_Option.flatMap(Api$PlantSaver.tomorrowNight(forecasts), (function (param) {
+                    return isSafe(plant, param);
+                  })), "Kann draussen bleiben");
+}
+
 Api$PlantSaver.forecast(plant).then((function (forecasts) {
-          return Promise.resolve(Api$PlantSaver.tomorrow(forecasts));
-        })).then((function (tomorrow) {
-        if (tomorrow) {
-          var main = tomorrow[0];
-          if (main[/* main */0][/* temp_min */2] - 272.15 < 15.0) {
-            console.log("Hol sie rein es werden " + (main[/* main */0][/* temp_min */2] - 272.15).toString());
-          } else {
-            console.log("alles fein");
-          }
-          return Promise.resolve("");
-        } else {
-          return Promise.resolve("");
-        }
+          return Promise.resolve(command(forecasts));
+        })).then((function (cmd) {
+        return Promise.resolve((console.log(cmd), /* () */0));
       }));
 
 exports.plant = plant;
+exports.isSafe = isSafe;
+exports.command = command;
 /*  Not a pure module */

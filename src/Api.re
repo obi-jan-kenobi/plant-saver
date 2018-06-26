@@ -10,7 +10,13 @@ type temp = {
 
 type main = {main: temp};
 
-type forecasts = {list: array(main)};
+type forecast = {
+  main: temp,
+  dt: int,
+  dt_txt: string,
+};
+
+type forecasts = {list: array(forecast)};
 
 module Decode = {
   let temp = json =>
@@ -19,9 +25,14 @@ module Decode = {
       temp_max: json |> field("temp_max", float),
       temp_min: json |> field("temp_min", float),
     };
-  let main = json => Json.Decode.{main: json |> field("main", temp)};
+  let forecast = json =>
+    Json.Decode.{
+      main: json |> field("main", temp),
+      dt: json |> field("dt", int),
+      dt_txt: json |> field("dt_txt", string),
+    };
   let forecasts = json =>
-    Json.Decode.{list: json |> field("list", array(main))};
+    Json.Decode.{list: json |> field("list", array(forecast))};
 };
 
 let decode = data => data |> Json.parseOrRaise |> Decode.forecasts;
@@ -30,7 +41,7 @@ let forecast = (plant: Plant.plant) =>
   switch (Js.Dict.get(Node.Process.process##env, "APPID")) {
   | Some(appId) =>
     Fetch.fetch(
-      "http://samples.openweathermap.org/data/2.5/forecast?zip="
+      "http://api.openweathermap.org/data/2.5/forecast?zip="
       ++ Plant.zipToString(plant.location.zip)
       ++ ","
       ++ Plant.countryToString(plant.location.country)
@@ -42,4 +53,11 @@ let forecast = (plant: Plant.plant) =>
   | None => Js.Promise.reject(raise(NoAppId))
   };
 
-let tomorrow = (forecasts: forecasts) => forecasts.list[1];
+let isNight = date =>
+  Js.Date.getHours(date) >= 0.0 && Js.Date.getHours(date) <= 3.0;
+
+let tomorrowNight = forecasts =>
+  Js.Array.find(
+    forecast => forecast.dt_txt |> Js.Date.parse |> isNight,
+    forecasts.list,
+  );

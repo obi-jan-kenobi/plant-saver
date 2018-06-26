@@ -3,8 +3,8 @@
 
 var Json = require("bs-json/src/Json.js");
 var Process = require("process");
-var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
 var Json_decode = require("bs-json/src/Json_decode.js");
+var Js_primitive = require("bs-platform/lib/js/js_primitive.js");
 var Caml_exceptions = require("bs-platform/lib/js/caml_exceptions.js");
 var Plant$PlantSaver = require("./Plant.bs.js");
 
@@ -18,19 +18,23 @@ function temp(json) {
         ];
 }
 
-function main(json) {
-  return /* record */[/* main */Json_decode.field("main", temp, json)];
+function forecast(json) {
+  return /* record */[
+          /* main */Json_decode.field("main", temp, json),
+          /* dt */Json_decode.field("dt", Json_decode.$$int, json),
+          /* dt_txt */Json_decode.field("dt_txt", Json_decode.string, json)
+        ];
 }
 
 function forecasts(json) {
   return /* record */[/* list */Json_decode.field("list", (function (param) {
-                  return Json_decode.array(main, param);
+                  return Json_decode.array(forecast, param);
                 }), json)];
 }
 
 var Decode = /* module */[
   /* temp */temp,
-  /* main */main,
+  /* forecast */forecast,
   /* forecasts */forecasts
 ];
 
@@ -38,10 +42,10 @@ function decode(data) {
   return forecasts(Json.parseOrRaise(data));
 }
 
-function forecast(plant) {
+function forecast$1(plant) {
   var match = Process.env["APPID"];
   if (match !== undefined) {
-    return fetch("http://samples.openweathermap.org/data/2.5/forecast?zip=" + (Plant$PlantSaver.zipToString(plant[/* location */0][/* zip */0]) + ("," + (Plant$PlantSaver.countryToString(plant[/* location */0][/* country */1]) + ("&appid=" + match))))).then((function (prim) {
+    return fetch("http://api.openweathermap.org/data/2.5/forecast?zip=" + (Plant$PlantSaver.zipToString(plant[/* location */0][/* zip */0]) + ("," + (Plant$PlantSaver.countryToString(plant[/* location */0][/* country */1]) + ("&appid=" + match))))).then((function (prim) {
                     return prim.text();
                   })).then((function (data) {
                   return Promise.resolve(forecasts(Json.parseOrRaise(data)));
@@ -52,13 +56,24 @@ function forecast(plant) {
   }
 }
 
-function tomorrow(forecasts) {
-  return Belt_Array.get(forecasts[/* list */0], 1);
+function isNight(date) {
+  if (date.getHours() >= 0.0) {
+    return date.getHours() <= 3.0;
+  } else {
+    return false;
+  }
+}
+
+function tomorrowNight(forecasts) {
+  return Js_primitive.undefined_to_opt(forecasts[/* list */0].find((function (forecast) {
+                    return isNight(new Date(forecast[/* dt_txt */2]));
+                  })));
 }
 
 exports.NoAppId = NoAppId;
 exports.Decode = Decode;
 exports.decode = decode;
-exports.forecast = forecast;
-exports.tomorrow = tomorrow;
+exports.forecast = forecast$1;
+exports.isNight = isNight;
+exports.tomorrowNight = tomorrowNight;
 /* process Not a pure module */
