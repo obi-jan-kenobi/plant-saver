@@ -8,8 +8,6 @@ type temp = {
   temp_min: float,
 };
 
-type main = {main: temp};
-
 type forecast = {
   main: temp,
   dt: int,

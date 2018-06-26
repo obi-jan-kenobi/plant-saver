@@ -8,7 +8,7 @@ let plant: Plant.plant = {
   threshold: Plant.Celsius(15.0),
 };
 
-let isSafe = (plant: Plant.plant, tomorrow: Api.forecast) =>
+let needsSaving = (plant: Plant.plant, tomorrow: Api.forecast) =>
   switch (plant.threshold) {
   | Celsius(x) =>
     if (tomorrow.main.temp_min -. 272.15 < x) {
@@ -31,7 +31,7 @@ let isSafe = (plant: Plant.plant, tomorrow: Api.forecast) =>
 
 let command = forecasts =>
   Option.getWithDefault(
-    Option.flatMap(Api.tomorrowNight(forecasts), isSafe(plant)),
+    Option.flatMap(Api.tomorrowNight(forecasts), needsSaving(plant)),
     "Kann draussen bleiben",
   );
 

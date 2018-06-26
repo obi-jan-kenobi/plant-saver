@@ -13,7 +13,7 @@ var plant = /* record */[
   /* threshold : Celsius */Block.__(1, [15.0])
 ];
 
-function isSafe(plant, tomorrow) {
+function needsSaving(plant, tomorrow) {
   var match = plant[/* threshold */1];
   if (match.tag) {
     if (tomorrow[/* main */0][/* temp_min */2] - 272.15 < match[0]) {
@@ -30,7 +30,7 @@ function isSafe(plant, tomorrow) {
 
 function command(forecasts) {
   return Belt_Option.getWithDefault(Belt_Option.flatMap(Api$PlantSaver.tomorrowNight(forecasts), (function (param) {
-                    return isSafe(plant, param);
+                    return needsSaving(plant, param);
                   })), "Kann draussen bleiben");
 }
 
@@ -41,6 +41,6 @@ Api$PlantSaver.forecast(plant).then((function (forecasts) {
       }));
 
 exports.plant = plant;
-exports.isSafe = isSafe;
+exports.needsSaving = needsSaving;
 exports.command = command;
 /*  Not a pure module */
