@@ -1,5 +1,3 @@
-open Belt;
-
 exception NoAppId;
 
 type temp = {
@@ -35,21 +33,17 @@ module Decode = {
 
 let decode = data => data |> Json.parseOrRaise |> Decode.forecasts;
 
-let forecast = (plant: Plant.plant) =>
-  switch (Js.Dict.get(Node.Process.process##env, "APPID")) {
-  | Some(appId) =>
-    Fetch.fetch(
-      "http://api.openweathermap.org/data/2.5/forecast?zip="
-      ++ Plant.zipToString(plant.location.zip)
-      ++ ","
-      ++ Plant.countryToString(plant.location.country)
-      ++ "&appid="
-      ++ appId,
-    )
-    |> Js.Promise.then_(Fetch.Response.text)
-    |> Js.Promise.then_(data => data |> decode |> Js.Promise.resolve)
-  | None => Js.Promise.reject(raise(NoAppId))
-  };
+let forecast = (appid: string, plant: Plant.plant) =>
+  Fetch.fetch(
+    "http://api.openweathermap.org/data/2.5/forecast?zip="
+    ++ Plant.zipToString(plant.location.zip)
+    ++ ","
+    ++ Plant.countryToString(plant.location.country)
+    ++ "&appid="
+    ++ appid,
+  )
+  |> Js.Promise.then_(Fetch.Response.text)
+  |> Js.Promise.then_(data => data |> decode |> Js.Promise.resolve);
 
 let isNight = date =>
   Js.Date.getHours(date) >= 0.0 && Js.Date.getHours(date) <= 3.0;

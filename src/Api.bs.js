@@ -2,13 +2,9 @@
 'use strict';
 
 var Json = require("bs-json/src/Json.js");
-var Process = require("process");
 var Json_decode = require("bs-json/src/Json_decode.js");
 var Js_primitive = require("bs-platform/lib/js/js_primitive.js");
-var Caml_exceptions = require("bs-platform/lib/js/caml_exceptions.js");
 var Plant$PlantSaver = require("./Plant.bs.js");
-
-var NoAppId = Caml_exceptions.create("Api-PlantSaver.NoAppId");
 
 function temp(json) {
   return /* record */[
@@ -32,18 +28,12 @@ function forecasts(json) {
                 }), json)];
 }
 
-function forecast$1(plant) {
-  var match = Process.env["APPID"];
-  if (match !== undefined) {
-    return fetch("http://api.openweathermap.org/data/2.5/forecast?zip=" + (Plant$PlantSaver.zipToString(plant[/* location */0][/* zip */0]) + ("," + (Plant$PlantSaver.countryToString(plant[/* location */0][/* country */1]) + ("&appid=" + match))))).then((function (prim) {
-                    return prim.text();
-                  })).then((function (data) {
-                  return Promise.resolve(forecasts(Json.parseOrRaise(data)));
-                }));
-  } else {
-    throw NoAppId;
-    return Promise.reject(undefined);
-  }
+function forecast$1(appid, plant) {
+  return fetch("http://api.openweathermap.org/data/2.5/forecast?zip=" + (Plant$PlantSaver.zipToString(plant[/* location */0][/* zip */0]) + ("," + (Plant$PlantSaver.countryToString(plant[/* location */0][/* country */1]) + ("&appid=" + appid))))).then((function (prim) {
+                  return prim.text();
+                })).then((function (data) {
+                return Promise.resolve(forecasts(Json.parseOrRaise(data)));
+              }));
 }
 
 function tomorrowNight(forecasts) {
@@ -59,4 +49,4 @@ function tomorrowNight(forecasts) {
 
 exports.forecast = forecast$1;
 exports.tomorrowNight = tomorrowNight;
-/* process Not a pure module */
+/* No side effect */

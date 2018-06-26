@@ -2,7 +2,10 @@
 'use strict';
 
 var Block = require("bs-platform/lib/js/block.js");
+var Process = require("process");
 var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
+var Js_primitive = require("bs-platform/lib/js/js_primitive.js");
+var Mail = require("@sendgrid/mail");
 var Api$PlantSaver = require("./Api.bs.js");
 
 var plant = /* record */[
@@ -34,13 +37,34 @@ function command(forecasts) {
                   })), "Kann draussen bleiben");
 }
 
-Api$PlantSaver.forecast(plant).then((function (forecasts) {
+var appid = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["APPID"]));
+
+var apikey = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["SENDGRID_API_KEY"]));
+
+var to_ = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["EMAIL_TO"]));
+
+var from = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["EMAIL_FROM"]));
+
+Mail.setApiKey(apikey);
+
+Api$PlantSaver.forecast(appid, plant).then((function (forecasts) {
           return Promise.resolve(command(forecasts));
         })).then((function (cmd) {
-        return Promise.resolve((console.log(cmd), /* () */0));
+        var msg = {
+          to: to_,
+          from: from,
+          subject: "Plant Status",
+          text: cmd,
+          html: cmd
+        };
+        return Promise.resolve((Mail.send(msg), /* () */0));
       }));
 
 exports.plant = plant;
 exports.needsSaving = needsSaving;
 exports.command = command;
-/*  Not a pure module */
+exports.appid = appid;
+exports.apikey = apikey;
+exports.to_ = to_;
+exports.from = from;
+/* appid Not a pure module */

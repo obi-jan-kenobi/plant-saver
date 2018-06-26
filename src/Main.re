@@ -1,5 +1,17 @@
 open Belt;
 
+[@bs.deriving abstract]
+type msg = {
+  [@bs.as "to"] to_: string,
+  from: string,
+  subject: string,
+  text: string,
+  html: string,
+};
+
+[@bs.module "@sendgrid/mail"] external setApiKey : string => unit = "";
+[@bs.module "@sendgrid/mail"] external send : msg => unit = "";
+
 let plant: Plant.plant = {
   location: {
     zip: Plant.ZipDe("40239"),
@@ -35,6 +47,18 @@ let command = forecasts =>
     "Kann draussen bleiben",
   );
 
-Api.forecast(plant)
+let appid = Option.getExn(Js.Dict.get(Node.Process.process##env, "APPID"));
+let apikey =
+  Option.getExn(Js.Dict.get(Node.Process.process##env, "SENDGRID_API_KEY"));
+
+let to_ = Option.getExn(Js.Dict.get(Node.Process.process##env, "EMAIL_TO"));
+let from = Option.getExn(Js.Dict.get(Node.Process.process##env, "EMAIL_FROM"));
+
+setApiKey(apikey);
+
+Api.forecast(appid, plant)
 |> Js.Promise.then_(forecasts => Js.Promise.resolve(command(forecasts)))
-|> Js.Promise.then_(cmd => Js.Promise.resolve(Js.log(cmd)));
+|> Js.Promise.then_(cmd => {
+  let msg = msg(~to_=to_, ~from=from, ~subject="Plant Status", ~text=cmd, ~html=cmd);
+  Js.Promise.resolve(send(msg));
+});
