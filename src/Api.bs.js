@@ -32,16 +32,6 @@ function forecasts(json) {
                 }), json)];
 }
 
-var Decode = /* module */[
-  /* temp */temp,
-  /* forecast */forecast,
-  /* forecasts */forecasts
-];
-
-function decode(data) {
-  return forecasts(Json.parseOrRaise(data));
-}
-
 function forecast$1(plant) {
   var match = Process.env["APPID"];
   if (match !== undefined) {
@@ -56,24 +46,17 @@ function forecast$1(plant) {
   }
 }
 
-function isNight(date) {
-  if (date.getHours() >= 0.0) {
-    return date.getHours() <= 3.0;
-  } else {
-    return false;
-  }
-}
-
 function tomorrowNight(forecasts) {
   return Js_primitive.undefined_to_opt(forecasts[/* list */0].find((function (forecast) {
-                    return isNight(new Date(forecast[/* dt_txt */2]));
+                    var date = new Date(forecast[/* dt_txt */2]);
+                    if (date.getHours() >= 0.0) {
+                      return date.getHours() <= 3.0;
+                    } else {
+                      return false;
+                    }
                   })));
 }
 
-exports.NoAppId = NoAppId;
-exports.Decode = Decode;
-exports.decode = decode;
 exports.forecast = forecast$1;
-exports.isNight = isNight;
 exports.tomorrowNight = tomorrowNight;
 /* process Not a pure module */
