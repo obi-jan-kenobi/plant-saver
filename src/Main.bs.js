@@ -8,16 +8,42 @@ var Js_primitive = require("bs-platform/lib/js/js_primitive.js");
 var Mail = require("@sendgrid/mail");
 var Api$PlantSaver = require("./Api.bs.js");
 
+var to_ = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["EMAIL_TO"]));
+
+var from = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["EMAIL_FROM"]));
+
+var user_000 = /* id : UserId */["1"];
+
+var user_001 = /* email : Email */[to_];
+
+var user_002 = /* password : Password */["1"];
+
+var user = /* record */[
+  user_000,
+  user_001,
+  user_002
+];
+
+var plant_000 = /* id : PlantId */["Habanero"];
+
+var plant_001 = /* owner : UserId */["1"];
+
+var plant_002 = /* location : record */[
+  /* zip : ZipDe */["40239"],
+  /* country : DE */0
+];
+
+var plant_003 = /* threshold : Celsius */Block.__(1, [15.0]);
+
 var plant = /* record */[
-  /* location : record */[
-    /* zip : ZipDe */["40239"],
-    /* country : DE */0
-  ],
-  /* threshold : Celsius */Block.__(1, [15.0])
+  plant_000,
+  plant_001,
+  plant_002,
+  plant_003
 ];
 
 function needsSaving(plant, tomorrow) {
-  var match = plant[/* threshold */1];
+  var match = plant[/* threshold */3];
   if (match.tag) {
     if (tomorrow[/* main */0][/* temp_min */2] - 272.15 < match[0]) {
       return /* Some */["Hol sie rein es werden " + (tomorrow[/* main */0][/* temp_min */2] - 272.15).toString()];
@@ -41,10 +67,6 @@ var appid = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["APPID"
 
 var apikey = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["SENDGRID_API_KEY"]));
 
-var to_ = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["EMAIL_TO"]));
-
-var from = Belt_Option.getExn(Js_primitive.undefined_to_opt(Process.env["EMAIL_FROM"]));
-
 Mail.setApiKey(apikey);
 
 Api$PlantSaver.forecast(appid, plant).then((function (forecasts) {
@@ -57,14 +79,15 @@ Api$PlantSaver.forecast(appid, plant).then((function (forecasts) {
           text: cmd,
           html: cmd
         };
-        return Promise.resolve((Mail.send(msg), /* () */0));
+        return Promise.resolve(Mail.send(msg));
       }));
 
+exports.to_ = to_;
+exports.from = from;
+exports.user = user;
 exports.plant = plant;
 exports.needsSaving = needsSaving;
 exports.command = command;
 exports.appid = appid;
 exports.apikey = apikey;
-exports.to_ = to_;
-exports.from = from;
-/* appid Not a pure module */
+/* to_ Not a pure module */

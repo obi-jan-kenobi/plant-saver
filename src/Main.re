@@ -10,9 +10,20 @@ type msg = {
 };
 
 [@bs.module "@sendgrid/mail"] external setApiKey : string => unit = "";
-[@bs.module "@sendgrid/mail"] external send : msg => unit = "";
+[@bs.module "@sendgrid/mail"] external send : msg => Js.Promise.t(unit) = "";
+
+let to_ = Option.getExn(Js.Dict.get(Node.Process.process##env, "EMAIL_TO"));
+let from = Option.getExn(Js.Dict.get(Node.Process.process##env, "EMAIL_FROM"));
+
+let user: User.user = {
+  id: User.UserId("1"),
+  email: User.Email(to_),
+  password: User.Password("1")
+};
 
 let plant: Plant.plant = {
+  id: Plant.PlantId("Habanero"),
+  owner: user.id,
   location: {
     zip: Plant.ZipDe("40239"),
     country: Plant.DE,
@@ -50,9 +61,6 @@ let command = forecasts =>
 let appid = Option.getExn(Js.Dict.get(Node.Process.process##env, "APPID"));
 let apikey =
   Option.getExn(Js.Dict.get(Node.Process.process##env, "SENDGRID_API_KEY"));
-
-let to_ = Option.getExn(Js.Dict.get(Node.Process.process##env, "EMAIL_TO"));
-let from = Option.getExn(Js.Dict.get(Node.Process.process##env, "EMAIL_FROM"));
 
 setApiKey(apikey);
 

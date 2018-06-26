@@ -29,7 +29,7 @@ function forecasts(json) {
 }
 
 function forecast$1(appid, plant) {
-  return fetch("http://api.openweathermap.org/data/2.5/forecast?zip=" + (Plant$PlantSaver.zipToString(plant[/* location */0][/* zip */0]) + ("," + (Plant$PlantSaver.countryToString(plant[/* location */0][/* country */1]) + ("&appid=" + appid))))).then((function (prim) {
+  return fetch("http://api.openweathermap.org/data/2.5/forecast?zip=" + (Plant$PlantSaver.zipToString(plant[/* location */2][/* zip */0]) + ("," + (Plant$PlantSaver.countryToString(plant[/* location */2][/* country */1]) + ("&appid=" + appid))))).then((function (prim) {
                   return prim.text();
                 })).then((function (data) {
                 return Promise.resolve(forecasts(Json.parseOrRaise(data)));

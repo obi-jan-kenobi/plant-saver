@@ -1,3 +1,6 @@
+type id =
+  | PlantId(string);
+
 type zip =
   | ZipDe(string);
 
@@ -24,6 +27,8 @@ let zipToString = zip =>
   };
 
 type plant = {
+  id,
+  owner: User.id,
   location,
   threshold: temperature,
 };
