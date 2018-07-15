@@ -12,9 +12,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "bs-platform": "^3.1.5"
   },
   "dependencies": {
+    "bs-platform": "^3.1.5",
     "@sendgrid/mail": "^6.3.1",
     "bs-fetch": "^0.3.0",
     "bs-json": "^1.0.1",
