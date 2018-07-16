@@ -11,8 +11,7 @@
   ],
   "author": "",
   "license": "MIT",
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "dependencies": {
     "bs-platform": "^3.1.5",
     "@sendgrid/mail": "^6.3.1",
